@@ -1,2 +1,1 @@
-# FinancialCalculator
-FinancialCalculator for Sandwich Generation
+# FinCalc
