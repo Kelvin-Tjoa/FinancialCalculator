@@ -7,6 +7,7 @@ class EmergencyFundCalculator {
     initializeForm() {
         this.form = {
             monthlyExpense: document.getElementById('monthlyExpense'),
+            maritalStatus: document.getElementById('maritalStatus'),
             dependents: document.getElementById('dependents'),
             currentFund: document.getElementById('currentFund'),
             monthlyInvestment: document.getElementById('monthlyInvestment'),
@@ -68,6 +69,7 @@ class EmergencyFundCalculator {
     calculate() {
         try {
             const monthlyExpense = parseInt(this.unformatNumber(this.form.monthlyExpense.value), 10);
+            const maritalStatus = this.form.maritalStatus.value;
             const dependents = parseInt(this.form.dependents.value, 10) || 0;
             const currentFund = parseInt(this.unformatNumber(this.form.currentFund.value), 10);
             const monthlyInvestment = parseInt(this.unformatNumber(this.form.monthlyInvestment.value), 10);
@@ -78,7 +80,19 @@ class EmergencyFundCalculator {
                 return;
             }
 
-            const emergencyMonths = dependents > 0 ? 6 : 3;
+            const familyMembers = maritalStatus === 'married' ? 2 + dependents : 1 + dependents;
+            let emergencyMonths = 3;
+
+            if (maritalStatus === 'married') {
+                if (dependents <= 0) {
+                    emergencyMonths = 6;
+                } else if (dependents === 1) {
+                    emergencyMonths = 9;
+                } else {
+                    emergencyMonths = 12;
+                }
+            }
+
             const totalRequired = monthlyExpense * emergencyMonths;
             const monthlyRate = returnRate / 100 / 12;
 
@@ -92,6 +106,7 @@ class EmergencyFundCalculator {
             const result = {
                 totalRequired,
                 emergencyMonths,
+                familyMembers,
                 currentFund,
                 futureValue: sim.futureValue,
                 monthlyInvestment,
@@ -112,10 +127,7 @@ class EmergencyFundCalculator {
     displayResults(result) {
         const hintEl = document.getElementById('emergencyMonthsHint');
         if (hintEl) {
-            hintEl.textContent =
-                result.emergencyMonths === 6
-                    ? 'Dasar hitung: 6 bulan pengeluaran wajib (ada tanggungan).'
-                    : 'Dasar hitung: 3 bulan pengeluaran wajib (tanpa tanggungan).';
+            hintEl.textContent = `Dasar hitung: ${result.emergencyMonths} bulan pengeluaran wajib (${result.familyMembers} orang dalam keluarga).`;
         }
 
         document.getElementById('totalRequired').textContent = this.formatNumber(Math.round(result.totalRequired));
